@@ -1,0 +1,38 @@
+# Build the Go Binary.
+FROM golang:1.21 as build_app
+ENV CGO_ENABLED 0
+ARG BUILD_REF
+
+# (***remove the 4 next lines if you are using vendoring***)
+# Create the application directory and the copy of the go modules files first and then download the dependencies
+RUN mkdir /application
+COPY go.* /application/
+WORKDIR /application
+RUN go mod download
+
+# Copy the source code into the container.
+COPY . /application
+
+# Build the service binary.
+WORKDIR /application/app/v1
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+# Run the Go Binary in Alpine.
+FROM alpine:3.18
+ARG BUILD_DATE
+ARG BUILD_REF
+RUN addgroup -g 1000 -S appUser && \
+    adduser -u 1000 -h /application -G appUser -S appUser
+COPY --from=build_app --chown=appUser:appUser /application/app/v1/v1 /application/v1
+WORKDIR /application
+USER appUser
+# EXPOSE 3000
+CMD ["./v1"]
+
+# Label the Docker image with metadata.
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.title="app-v1" \
+      org.opencontainers.image.authors="Victor Acrani Ruivo <victoracrani@gmail.com>" \
+      org.opencontainers.image.source="https://github.com/Victor-Acrani/introduction-to-kind" \
+      org.opencontainers.image.revision="${BUILD_REF}" \
+      org.opencontainers.image.vendor="Victor Acrani Ruivo"

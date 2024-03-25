@@ -1,0 +1,52 @@
+# DEFINE NAMESPACE
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pod-example
+
+---
+
+# DEFINE POD
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: pod-app  # set pod app label
+  name: app-v1  # pod name
+  namespace: pod-example  # set namespace
+
+spec:
+  terminationGracePeriodSeconds: 60
+  containers:
+  - name: app-v1 # set pod image
+    image: acrani/application/test-app-v1:0.0.1
+    ports:  # expose pod port
+    - containerPort: 3000
+      name: pod-port
+
+  dnsPolicy: ClusterFirstWithHostNet
+  hostNetwork: true
+
+---
+
+# DEFINE SERVICE 
+apiVersion: v1
+kind: Service
+metadata:
+  name: pod-service
+  namespace: pod-example  # set namespace
+
+spec:
+  selector:
+    app: pod-app  # selector target pod with label app = pod-app
+
+  type: ClusterIP # set service as ClusterIP
+
+  ports:
+  - name: service-port  # service-port targets pod-port
+    protocol: TCP
+    port: 3000
+    targetPort: pod-port
+
+#NOTE: as were are using a ClusterIP Service, the pod, service and cluster ports must be the same number. 
+# Other wise any connection will be refused.     
