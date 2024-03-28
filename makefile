@@ -117,7 +117,7 @@ apply-pod:
 	kubectl apply -f zarf/k8s/base/base-pod-example.yaml
 
 get-all-pod:
-	kubectl get all -o wide -n pod-example
+	kubectl get all -o wide -n pod-namespace
 
 delete-pod:
 	kubectl delete -f zarf/k8s/base/base-pod-example.yaml	
@@ -126,7 +126,7 @@ describe-pod:
 	kubectl describe pod -n pod-example -l app=pod-app	
 
 log-pod:
-	kubectl logs -n pod-example -l app=pod-app --all-containers=true -f --tail=100	
+	kubectl logs -n pod-namespace -l app=pod-app --all-containers=true -f --tail=100	
 
 call-pod:
 	curl -il http://localhost:3000/api/v1/health
