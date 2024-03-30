@@ -116,6 +116,11 @@ run-image-app-v1:
 apply-pod:
 	kubectl apply -f zarf/k8s/base/base-pod-example.yaml
 
+apply-pod-with-env-var:
+	sed "s/REPLACE_ENV_VAR/smooth operator/g" zarf/k8s/base/base-pod-example.yaml > kubernetes.yaml | \
+	kubectl apply -f kubernetes.yaml
+	rm kubernetes.yaml
+
 get-all-pod:
 	kubectl get all -o wide -n pod-namespace
 

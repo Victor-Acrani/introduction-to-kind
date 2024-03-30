@@ -18,11 +18,15 @@ metadata:
 spec:
   terminationGracePeriodSeconds: 60 # set termination period
   containers:
-  - name: app-v1-container # set pod image
-    image: acrani/application/test-app-v1:0.0.1
+  - name: app-v1-container # set container name
+    image: acrani/application/test-app-v1:0.0.1 # set image name
     ports:  # expose pod port and set port name
     - containerPort: 3000
       name: pod-port
+    env: 
+      - name: ENV_VAR
+        value: REPLACE_ENV_VAR
+
 
   dnsPolicy: ClusterFirstWithHostNet
   hostNetwork: true

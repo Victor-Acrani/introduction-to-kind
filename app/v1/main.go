@@ -37,6 +37,10 @@ var (
 func main() {
 	infoLog.Printf("starting %s", appName)
 
+	// read env var
+	infoLog.Printf(`got [%s] from pod ENV_VAR`, os.Getenv("ENV_VAR"))
+	
+
 	// set default handler
 	http.HandleFunc("/", LogMiddleware(noRoute)) // this handle func must be the first to handle undefined paths
 	http.HandleFunc("/api/v1/health", LogMiddleware(healthCheck))
