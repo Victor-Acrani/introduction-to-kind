@@ -56,17 +56,19 @@ GOLANG          := golang:1.21
 KIND            := kindest/node:v1.27.1
 ALPINE          := alpine:3.18
 
-KIND_CLUSTER    := test-cluster
-NAMESPACE       := test-app
-APP             := test
+KIND_CLUSTER    := local-cluster
 BASE_IMAGE_NAME := acrani/application
-SERVICE_NAME_1  := test-app-v1
 VERSION         := 0.0.1
-SERVICE_IMAGE_1 := $(BASE_IMAGE_NAME)/$(SERVICE_NAME_1):$(VERSION)
+
+# Version 1
+SERVICE_NAME_V1  := test-app-v1
+SERVICE_IMAGE_V1 := $(BASE_IMAGE_NAME)/$(SERVICE_NAME_V1):$(VERSION)
 
 # ==============================================================================
 #	KIND
 # ==============================================================================
+
+# create Kind cluster.
 create-cluster:
 	kind create cluster \
 	--image $(KIND) \
@@ -81,57 +83,75 @@ create-cluster:
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
 
+# get Kind clusters.
 get-cluster:
 	kind get clusters
 
+# delete Kind cluster.
 delete-cluster:
 	kind delete cluster --name $(KIND_CLUSTER)
 
+# list cluster images.
 list-loaded-images:
 	kind get nodes --name $(KIND_CLUSTER) | xargs -n1 -I {} docker exec {} crictl images	
 
-# first build the docker image and then run this command
+# load app-v1 docker image to kind cluster. 
+# NOTE: first build the docker image and then run this command.
 load-app-v1-image:
-	kind load docker-image $(SERVICE_IMAGE_1) --name $(KIND_CLUSTER)	
+	kind load docker-image $(SERVICE_IMAGE_V1) --name $(KIND_CLUSTER)	
 
 # ==============================================================================
 #	DOCKER
 # ==============================================================================
+
+# build app-v1 image.
 build-image-app-v1:
 	docker build \
 		-f zarf/docker/dockerfile.app-v1 \
-		-t $(SERVICE_IMAGE_1) \
+		-t $(SERVICE_IMAGE_V1) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
 
+# run directly from docker (use this for testing outside Kubernetes).
 run-image-app-v1:
-	# run directly from docker
-	docker run -d -p 3000:3000 acrani/application/test-app:0.0.1
+	docker run -d -p 3000:3000 $(SERVICE_IMAGE_V1)
 
 # ==============================================================================
 #	K8S WITHIN KIND
 # ==============================================================================
-# Single Pod Example
-apply-pod:
+# Example 1 is a simple http server with a health check handler.
+# The purpose of this example is undestanding how to deploy a single pod, check its logs
+# and make a http request. 
+
+# apply k8s manifest.
+apply-v1:
 	kubectl apply -f zarf/k8s/base/base-pod-example.yaml
 
-apply-pod-with-env-var:
+# apply k8s manifest and replace env variable inside k8s manifest.
+# use this for loading sensitive content. 
+# sed command creates a new k8s manifest, then it is applyed and finally deleted.
+apply-v1-with-env-var:
 	sed "s/REPLACE_ENV_VAR/smooth operator/g" zarf/k8s/base/base-pod-example.yaml > kubernetes.yaml | \
 	kubectl apply -f kubernetes.yaml
 	rm kubernetes.yaml
 
-get-all-pod:
+# get all elements from v1 example.
+get-all-v1:
 	kubectl get all -o wide -n pod-namespace
 
-delete-pod:
+# delete all elements from v1 example.
+delete-v1:
 	kubectl delete -f zarf/k8s/base/base-pod-example.yaml	
 
-describe-pod: 
+# describe all elements from v1 example.
+describe-v1: 
 	kubectl describe pod -n pod-example -l app=pod-app	
 
-log-pod:
+# show app-v1 pod logs.
+log-v1:
 	kubectl logs -n pod-namespace -l app=pod-app --all-containers=true -f --tail=100	
 
-call-pod:
+# execute a GET request to app-v1 pod.
+call-v1:
 	curl -il http://localhost:3000/api/v1/health

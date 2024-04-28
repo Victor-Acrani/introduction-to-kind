@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: pod-namespace # set namespace name
+  name: pod-namespace # set namespace name (ALL COMPONENTS MUST BE IN THE SAME NAMESPACE)
 
 ---
 
@@ -11,21 +11,21 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: pod-app  # set pod label "app"
-  name: pod-app-v1  # set pod name
+    app: pod-app  # set pod label "app" (SETTING POD`S NAME AND LABEL WITH THE SAME VALUE MAKES THINGS EASIER TO USE)
+  name: pod-app  # set pod name
   namespace: pod-namespace  # set namespace
 
 spec:
   terminationGracePeriodSeconds: 60 # set termination period
   containers:
   - name: app-v1-container # set container name
-    image: acrani/application/test-app-v1:0.0.1 # set image name
+    image: acrani/application/test-app-v1:0.0.1 # set image name (IMAGE NAME IS HARDCODED, YOU CAN ENV VAR HERE IF YOU WANT)
     ports:  # expose pod port and set port name
-    - containerPort: 3000
-      name: pod-port
+    - containerPort: 3000 # set port number
+      name: pod-port # set pod port name
     env: 
-      - name: ENV_VAR
-        value: REPLACE_ENV_VAR
+      - name: ENV_VAR # create env var
+        value: REPLACE_ENV_VAR # set env var initial value
 
 
   dnsPolicy: ClusterFirstWithHostNet
