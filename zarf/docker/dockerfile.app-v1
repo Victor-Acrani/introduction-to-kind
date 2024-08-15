@@ -1,6 +1,6 @@
 # Build the Go Binary.
-FROM golang:1.21 as build_app
-ENV CGO_ENABLED 0
+FROM golang:1.21 AS build_app
+ENV CGO_ENABLED=0
 ARG BUILD_REF
 
 # (***remove the 4 next lines if you are using vendoring***)

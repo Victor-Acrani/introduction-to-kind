@@ -39,7 +39,6 @@ func main() {
 
 	// read env var
 	infoLog.Printf(`got [%s] from pod ENV_VAR`, os.Getenv("ENV_VAR"))
-	
 
 	// set default handler
 	http.HandleFunc("/", LogMiddleware(noRoute)) // this handle func must be the first to handle undefined paths
@@ -100,8 +99,6 @@ func (l *LogWriter) WriteHeader(statusCode int) {
 	l.ResponseWriter.WriteHeader(statusCode)
 }
 
-//func (l *LogWriter)
-
 func LogMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		t := time.Now()
@@ -139,11 +136,7 @@ func healthCheck(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Add("Content-Type", "application/json")
-	w.Header().Add("Content-Length", fmt.Sprintf("%d", len(jsonData)))
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonData)
+	response(w, http.StatusOK, jsonData)
 }
 
 // noRoute is a handle funtion for undefined paths.
@@ -159,9 +152,13 @@ func noRoute(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	response(w, http.StatusNotFound, jsonData)
+}
 
+// response set responseWriter with JSON body response.
+func response(w http.ResponseWriter, statusCode int, jsonData []byte) {
 	w.Header().Add("Content-Type", "application/json")
 	w.Header().Add("Content-Length", fmt.Sprintf("%d", len(jsonData)))
-	w.WriteHeader(http.StatusNotFound)
+	w.WriteHeader(statusCode)
 	w.Write(jsonData)
 }

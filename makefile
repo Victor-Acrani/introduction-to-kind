@@ -126,13 +126,13 @@ run-image-app-v1:
 
 # apply k8s manifest.
 apply-v1:
-	kubectl apply -f zarf/k8s/base/base-pod-example.yaml
+	kubectl apply -f zarf/k8s/base/v1/base-pod-example.yaml
 
 # apply k8s manifest and replace env variable inside k8s manifest.
 # use this for loading sensitive content. 
 # sed command creates a new k8s manifest, then it is applyed and finally deleted.
 apply-v1-with-env-var:
-	sed "s/REPLACE_ENV_VAR/smooth operator/g" zarf/k8s/base/base-pod-example.yaml > kubernetes.yaml | \
+	sed "s/REPLACE_ENV_VAR/smooth operator/g" zarf/k8s/base/v1/base-pod-example.yaml > kubernetes.yaml | \
 	kubectl apply -f kubernetes.yaml
 	rm kubernetes.yaml
 
@@ -142,11 +142,11 @@ get-all-v1:
 
 # delete all elements from v1 example.
 delete-v1:
-	kubectl delete -f zarf/k8s/base/base-pod-example.yaml	
+	kubectl delete -f zarf/k8s/base/v1/base-pod-example.yaml	
 
 # describe all elements from v1 example.
 describe-v1: 
-	kubectl describe pod -n pod-example -l app=pod-app	
+	kubectl describe pod -n pod-namespace -l app=pod-app	
 
 # show app-v1 pod logs.
 log-v1:
